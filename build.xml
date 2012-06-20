@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- 
+    Ant Script to build MBean project.
+        
+    One needs to define the following in order for the ant build to work:
+    	JAVA_HOME
+    	JBOSS_HOME
+       	
+    
+-->
+<project name="MBean Project Build" default="default" basedir="../">
+    <tstamp/>
+	 <property environment="env"/>
+	<property name="JBOSS_HOME"        	value="C:/Jboss/jboss-6.1.0.Final" />
+    <property name="java.home"        	value="${env.JAVA_HOME}" />
+	<property name="jboss.dist"        	value="${JBOSS_HOME}" />
+    <property name="project.name"      	value="systemProperties" /> 
+    	
+	
+    <echo>HostName         			:${env.HOST}</echo>
+    <echo>OS           				:${os.name}</echo>
+    <echo>BASEDIR      				:${basedir}</echo>
+    <echo>JAVAHOME     				:${java.home}</echo> 
+    <echo>JBOSS        				:${jboss.dist}</echo> 
+	<echo>Project       			:${project.name}</echo>
+	
+	
+    <property name="jboss.deploy.conf" value="default" />
+    <property name="jboss.deploy.dir"  value="${jboss.dist}/server/${jboss.deploy.conf}/deploy" />
+	 <property name="jboss.client.dir"  value="${jboss.dist}/client" />
+    <property name="jboss.deploy.jms.dir"  value="${jboss.deploy.dir}/jms" />
+    <property name="apps.dir" value="apps" />
+    
+	<!--Module specific properties for Source, Each module will have a build.xml file, not shown here-->
+
+	<!--Application-->
+   
+	<property name="application.dir"        	  value="${basedir}/${project.name}" /> 
+    <property name="application.conf.dir"         value="${basedir}/${project.name}/conf" />
+    <property name="application.build.dir"        value="${basedir}/${project.name}/build" />
+    <!--<property name="application.lib.dir"          value="${basedir}/${project.name}/lib" /> --> 
+    <property name="application.meta-inf.dir"     value="${basedir}/${project.name}/META-INF" /> 
+    
+	   
+	<!--MBean SAR-->
+		
+	<property name="sar.dir"         	   value="${basedir}/${project.name}" />
+	<property name="sar.jar.name"          value="${basedir}/${project.name}/${project.name}.sar" />
+	<property name="sar.build.dir"         value="${basedir}/${project.name}/build" />
+	<property name="sar.meta-inf.dir"      value="${basedir}/${project.name}/META-INF" />
+	<property name="sar.src.dir"           value="${basedir}/${project.name}/src" />
+   	
+    <path id="javabuild.classpath"> 
+    	
+    	<!-- Jars from base application lib sub directorys 
+    	
+    	<fileset dir="${application.lib.dir}">
+    		  <include name="**/**/*.jar" /> 
+    	</fileset>
+    	-->
+    	<pathelement location="${ejb.jar.name}" />
+
+    	
+    	<!-- JBOSS Jars -->
+    	
+    	<fileset dir="${jboss.dist}/lib">
+    	   	<include name="*.jar" /> 
+    	</fileset>
+    	<fileset dir="${jboss.dist}/server/default/lib">
+    	   	<include name="*.jar" />
+    	</fileset>
+    	<fileset dir="${jboss.dist}/client">
+    	   	<include name="*.jar" /> 
+    	</fileset>
+    	    	
+    </path> 
+  
+	<property name="jb.classpath" refid="javabuild.classpath"/>
+	
+	
+	<target name="default" depends="compilesrc,build-sar-jar">	</target>
+	
+	
+	
+	<target name="compilesrc" >
+		
+		<echo message="Cleaning directory: ${sar.build.dir}" />
+		<delete dir="${sar.build.dir}" />
+		<mkdir dir="${sar.build.dir}" />
+						
+		<echo message="Compiling source files into ${sar.build.dir}" />
+		<javac srcdir="${sar.dir}/src" source="1.5" destdir="${sar.build.dir}" classpath="${jb.classpath}" debug="true" fork="yes" > </javac>
+		
+	</target>
+	
+	
+	<target name="build-sar-jar" >
+			 
+		<echo message="Deleting old Service Archive sar: ${sar.jar.name}" />
+		<delete file="${sar.jar.name}" />
+		
+		<echo message="Creating Service Archive sar: ${sar.jar.name}" />
+		<copy todir="${sar.build.dir}/com/vzb/sys/prp">
+		    <fileset dir="${sar.src.dir}/com/vzb/sys/prp" includes="*.properties"/>
+		</copy>
+		<jar destfile="${sar.jar.name}">
+			<fileset dir="${sar.build.dir}" />
+			<zipfileset dir="${sar.meta-inf.dir}" prefix="META-INF"  />
+		</jar>
+
+	</target>
+	 
+   
+</project>
